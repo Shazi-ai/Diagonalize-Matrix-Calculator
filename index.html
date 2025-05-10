@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagonalize Matrix Calculator | Advanced Linear Algebra Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f5ff',
+                            100: '#ececff',
+                            200: '#d9d9ff',
+                            300: '#b3b2ff',
+                            400: '#8d8cf3',
+                            500: '#5D5CDE',
+                            600: '#4a49be',
+                            700: '#3a399c',
+                            800: '#2e2e7a',
+                            900: '#212159',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    },
+                }
+            }
+        }
+
+        // Check for dark mode preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+</head>
+<body class="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="bg-primary-500 dark:bg-primary-800 text-white shadow-md">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <h1 class="text-2xl font-bold">Diagonalize Matrix Calculator</h1>
+                    <nav class="flex mt-4 md:mt-0 space-x-1 md:space-x-4 overflow-x-auto py-2 w-full md:w-auto whitespace-nowrap">
+                        <button class="page-nav-btn px-3 py-2 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all" data-page="calculator">Calculator</button>
+                        <button class="page-nav-btn px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition-all" data-page="theory">Theory</button>
+                        <button class="page-nav-btn px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition-all" data-page="tutorial">Tutorial</button>
+                        <button class="page-nav-btn px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition-all" data-page="about">About</button>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <!-- Pages Container -->
+            <div class="pages-container">
+                <!-- Calculator Page -->
+                <div id="calculator-page" class="page active animate-fade-in">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                        <h2 class="text-2xl font-bold mb-4">Matrix Diagonalization Calculator</h2>
+                        <p class="mb-6">Enter a square matrix and we'll calculate its eigenvalues, eigenvectors, and diagonalized form if possible.</p>
+                        
+                        <div class="mb-6">
+                            <label class="block mb-2 font-medium">Matrix Size:</label>
+                            <div class="flex items-center space-x-4">
+                                <select id="matrix-size" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <option value="2">2×2</option>
+                                    <option value="3" selected>3×3</option>
+                                    <option value="4">4×4</option>
+                                    <option value="5">5×5</option>
+                                </select>
+                                <button id="update-size-btn" class="bg-primary-500 hover:bg-primary-600 dark:bg-primary-700 dark:hover:bg-primary-600 text-white rounded-md px-4 py-2 transition-colors">
+                                    Update
+                                </button>
+                                <button id="clear-matrix-btn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-md px-4 py-2 transition-colors">
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block mb-2 font-medium">Enter Matrix Values:</label>
+                            <div id="matrix-input-container" class="flex flex-col items-center space-y-2 overflow-x-auto">
+                                <!-- Matrix input fields will be generated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4">
+                            <button id="diagonalize-btn" class="bg-primary-500 hover:bg-primary-600 dark:bg-primary-700 dark:hover:bg-primary-600 text-white font-medium rounded-md px-6 py-3 transition-colors">
+                                Diagonalize Matrix
+                            </button>
+                            <button id="example-btn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-md px-6 py-3 transition-colors">
+                                Load Example
+                            </button>
+                            <button id="random-btn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-md px-6 py-3 transition-colors">
+                                Random Matrix
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="results-container" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 hidden">
+                        <h3 class="text-xl font-bold mb-4">Results</h3>
+                        
+                        <div class="space-y-6">
+                            <div id="diagonalizable-status" class="p-4 rounded-md"></div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-bold mb-2">Input Matrix (A)</h4>
+                                    <div id="input-matrix" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto"></div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold mb-2">Eigenvalues</h4>
+                                    <div id="eigenvalues" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="eigenvectors-container">
+                                <h4 class="font-bold mb-2">Eigenvectors</h4>
+                                <div id="eigenvectors" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto"></div>
+                            </div>
+                            
+                            <div id="diagonalization-container" class="space-y-4">
+                                <h4 class="font-bold">Diagonalization</h4>
+                                <p>A = PDP<sup>-1</sup> where:</p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <h5 class="font-medium mb-2">P (Eigenvector Matrix)</h5>
+                                        <div id="p-matrix" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto"></div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h5 class="font-medium mb-2">D (Diagonal Matrix)</h5>
+                                        <div id="d-matrix" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto"></div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h5 class="font-medium mb-2">P<sup>-1</sup> (Inverse of P)</h5>
+                                        <div id="p-inverse" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto"></div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h5 class="font-medium mb-2">Verification: PDP<sup>-1</sup></h5>
+                                    <div id="verification" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-4">
+                                <button id="copy-results-btn" class="bg-primary-500 hover:bg-primary-600 dark:bg-primary-700 dark:hover:bg-primary-600 text-white font-medium rounded-md px-4 py-2 transition-colors">
+                                    Copy Results
+                                </button>
+                                <button id="download-results-btn" class="bg-primary-500 hover:bg-primary-600 dark:bg-primary-700 dark:hover:bg-primary-600 text-white font-medium rounded-md px-4 py-2 transition-colors">
+                                    Download Results
+                                </button>
+                                <button id="print-results-btn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-md px-4 py-2 transition-colors">
+                                    Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theory Page -->
+                <div id="theory-page" class="page hidden animate-fade-in">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                        <h2 class="text-2xl font-bold mb-4">Theory of Matrix Diagonalization</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">What is Matrix Diagonalization?</h3>
+                                <p>Diagonalization is a process that transforms a square matrix into a diagonal matrix. A diagonal matrix is a special type of matrix where all elements outside the main diagonal are zero.</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">When Can a Matrix Be Diagonalized?</h3>
+                                <p>A square matrix A can be diagonalized if and only if it has n linearly independent eigenvectors, where n is the dimension of the matrix. In such cases, we call the matrix "diagonalizable".</p>
+                                <p class="mt-2">For an n×n matrix to be diagonalizable, a sufficient condition is that it has n distinct eigenvalues, though this is not necessary.</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">The Diagonalization Process</h3>
+                                <p>If A is a diagonalizable n×n matrix, then:</p>
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-4" id="diag-formula"></div>
+                                <p>Where:</p>
+                                <ul class="list-disc list-inside pl-4 space-y-2">
+                                    <li>P is a matrix whose columns are the eigenvectors of A</li>
+                                    <li>D is a diagonal matrix whose diagonal elements are the eigenvalues of A</li>
+                                    <li>P<sup>-1</sup> is the inverse of P</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Steps to Diagonalize a Matrix</h3>
+                                <ol class="list-decimal list-inside pl-4 space-y-2">
+                                    <li>Find all eigenvalues of the matrix A by solving the characteristic equation det(A - λI) = 0</li>
+                                    <li>For each eigenvalue λ, find the corresponding eigenvectors by solving (A - λI)v = 0</li>
+                                    <li>Form the matrix P by using these eigenvectors as columns</li>
+                                    <li>Form the diagonal matrix D by placing the eigenvalues on the main diagonal</li>
+                                    <li>Verify that A = PDP<sup>-1</sup></li>
+                                </ol>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Why Diagonalize?</h3>
+                                <p>Diagonalization has several practical applications:</p>
+                                <ul class="list-disc list-inside pl-4 space-y-2">
+                                    <li>Computing matrix powers becomes much easier with diagonal matrices</li>
+                                    <li>Solving systems of linear differential equations</li>
+                                    <li>Analyzing dynamical systems</li>
+                                    <li>Implementing principal component analysis (PCA)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tutorial Page -->
+                <div id="tutorial-page" class="page hidden animate-fade-in">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                        <h2 class="text-2xl font-bold mb-4">How to Use This Calculator</h2>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Step 1: Set Matrix Size</h3>
+                                <p>Select the size of your matrix from the dropdown menu (2×2 to 5×5) and click "Update" to generate the input form.</p>
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md mt-2">
+                                    <img src="https://pfst.cf2.poecdn.net/0a7c42a4db92a2a4e3f442ef32c1de65/c3f0d7e81e10c7c82c4d4037d3b2c25d.svg" alt="Matrix size selection" class="mx-auto max-w-full h-auto">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Step 2: Enter Matrix Values</h3>
+                                <p>Input the values for your matrix in the provided fields. You can use:</p>
+                                <ul class="list-disc list-inside pl-4 space-y-1">
+                                    <li>Integers (e.g., 5, -3)</li>
+                                    <li>Decimals (e.g., 2.5, -1.75)</li>
+                                    <li>Fractions (e.g., 1/2, -3/4)</li>
+                                </ul>
+                                <p class="mt-2">Alternatively, click "Load Example" for a sample diagonalizable matrix, or "Random Matrix" to generate a random matrix.</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Step 3: Calculate</h3>
+                                <p>Click "Diagonalize Matrix" to compute the eigenvalues, eigenvectors, and diagonalization (if possible).</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Step 4: Analyze Results</h3>
+                                <p>The calculator will display:</p>
+                                <ul class="list-disc list-inside pl-4 space-y-2">
+                                    <li>Whether the matrix is diagonalizable</li>
+                                    <li>The eigenvalues of the matrix</li>
+                                    <li>The corresponding eigenvectors</li>
+                                    <li>The matrices P, D, and P<sup>-1</sup> for the diagonalization</li>
+                                    <li>Verification that A = PDP<sup>-1</sup></li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Example Walkthrough</h3>
+                                <p>Let's diagonalize the matrix:</p>
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-4" id="example-matrix"></div>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-medium">Step 1: Find the eigenvalues</h4>
+                                        <p>We solve the characteristic equation det(A - λI) = 0:</p>
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-2" id="char-equation"></div>
+                                        <p>The eigenvalues are λ = 1 and λ = 3.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium">Step 2: Find the eigenvectors</h4>
+                                        <p>For λ = 1, we solve (A - I)v = 0:</p>
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-2" id="eigenvector1"></div>
+                                        <p>For λ = 3, we solve (A - 3I)v = 0:</p>
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-2" id="eigenvector2"></div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium">Step 3: Form the P and D matrices</h4>
+                                        <p>P is constructed using the eigenvectors as columns:</p>
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-2" id="p-matrix-example"></div>
+                                        <p>D is a diagonal matrix with eigenvalues on the main diagonal:</p>
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-2" id="d-matrix-example"></div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="font-medium">Step 4: Verify A = PDP<sup>-1</sup></h4>
+                                        <p>We calculate P<sup>-1</sup>:</p>
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-2" id="p-inverse-example"></div>
+                                        <p>And verify that A = PDP<sup>-1</sup>:</p>
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md overflow-x-auto my-2" id="verification-example"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Page -->
+                <div id="about-page" class="page hidden animate-fade-in">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                        <h2 class="text-2xl font-bold mb-4">About Matrix Diagonalizer</h2>
+                        
+                        <div class="space-y-6">
+                            <p>Matrix Diagonalizer is a powerful tool designed to help students, educators, and professionals work with linear algebra concepts. It provides an intuitive interface for diagonalizing matrices and understanding the underlying mathematical processes.</p>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Features</h3>
+                                <ul class="list-disc list-inside pl-4 space-y-1">
+                                    <li>Support for matrices up to 5×5</li>
+                                    <li>Step-by-step diagonalization process</li>
+                                    <li>Detailed eigenvalue and eigenvector calculations</li>
+                                    <li>Verification of results</li>
+                                    <li>Example matrices and random matrix generation</li>
+                                    <li>Responsive design for all devices</li>
+                                    <li>Dark mode support</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Technical Information</h3>
+                                <p>Matrix Diagonalizer is built using:</p>
+                                <ul class="list-disc list-inside pl-4 space-y-1">
+                                    <li>HTML, CSS, and JavaScript</li>
+                                    <li>Tailwind CSS for styling</li>
+                                    <li>Math.js for matrix calculations</li>
+                                    <li>KaTeX for mathematical notation rendering</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Educational Purpose</h3>
+                                <p>This tool is designed for educational purposes to help students visualize and understand matrix diagonalization. It's particularly useful for:</p>
+                                <ul class="list-disc list-inside pl-4 space-y-1">
+                                    <li>Linear Algebra courses</li>
+                                    <li>Engineering applications</li>
+                                    <li>Computer Science studies</li>
+                                    <li>Advanced Mathematics courses</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Limitations</h3>
+                                <p>While Matrix Diagonalizer is a powerful tool, it has some limitations to be aware of:</p>
+                                <ul class="list-disc list-inside pl-4 space-y-1">
+                                    <li>Matrix sizes are limited to 5×5 for performance reasons</li>
+                                    <li>Complex eigenvalues and eigenvectors may have numerical precision issues</li>
+                                    <li>Very ill-conditioned matrices might produce less accurate results</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Version Information</h3>
+                                <p>Current Version: 1.0</p>
+                                <p>Release Date: 2023</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-100 dark:bg-gray-800 py-6">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">© 2023 Matrix Diagonalizer. All rights reserved.</p>
+                    <div class="mt-4 md:mt-0">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Designed for educational purposes</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Render KaTeX formulas on the theory page
+        document.addEventListener('DOMContentLoaded', function() {
+            katex.render("A = PDP^{-1}", document.getElementById('diag-formula'));
+            
+            // Example matrices for the tutorial
+            katex.render("A = \\begin{pmatrix} 2 & 1 \\\\ 1 & 2 \\end{pmatrix}", document.getElementById('example-matrix'));
+            katex.render("\\det(A - \\lambda I) = \\det\\begin{pmatrix} 2-\\lambda & 1 \\\\ 1 & 2-\\lambda \\end{pmatrix} = (2-\\lambda)^2 - 1 = \\lambda^2 - 4\\lambda + 3 = (\\lambda - 1)(\\lambda - 3) = 0", document.getElementById('char-equation'));
+            katex.render("(A - I)v = \\begin{pmatrix} 1 & 1 \\\\ 1 & 1 \\end{pmatrix}\\begin{pmatrix} v_1 \\\\ v_2 \\end{pmatrix} = \\begin{pmatrix} 0 \\\\ 0 \\end{pmatrix} \\Rightarrow v_1 + v_2 = 0 \\Rightarrow v = \\begin{pmatrix} 1 \\\\ -1 \\end{pmatrix}", document.getElementById('eigenvector1'));
+            katex.render("(A - 3I)v = \\begin{pmatrix} -1 & 1 \\\\ 1 & -1 \\end{pmatrix}\\begin{pmatrix} v_1 \\\\ v_2 \\end{pmatrix} = \\begin{pmatrix} 0 \\\\ 0 \\end{pmatrix} \\Rightarrow -v_1 + v_2 = 0 \\Rightarrow v = \\begin{pmatrix} 1 \\\\ 1 \\end{pmatrix}", document.getElementById('eigenvector2'));
+            katex.render("P = \\begin{pmatrix} 1 & 1 \\\\ -1 & 1 \\end{pmatrix}", document.getElementById('p-matrix-example'));
+            katex.render("D = \\begin{pmatrix} 1 & 0 \\\\ 0 & 3 \\end{pmatrix}", document.getElementById('d-matrix-example'));
+            katex.render("P^{-1} = \\frac{1}{2}\\begin{pmatrix} 1 & -1 \\\\ 1 & 1 \\end{pmatrix}", document.getElementById('p-inverse-example'));
+            katex.render("PDP^{-1} = \\begin{pmatrix} 1 & 1 \\\\ -1 & 1 \\end{pmatrix}\\begin{pmatrix} 1 & 0 \\\\ 0 & 3 \\end{pmatrix}\\frac{1}{2}\\begin{pmatrix} 1 & -1 \\\\ 1 & 1 \\end{pmatrix} = \\begin{pmatrix} 2 & 1 \\\\ 1 & 2 \\end{pmatrix} = A", document.getElementById('verification-example'));
+        });
+
+        // Navigation between pages
+        document.querySelectorAll('.page-nav-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button
+                document.querySelectorAll('.page-nav-btn').forEach(btn => {
+                    btn.classList.remove('bg-white', 'bg-opacity-20');
+                    btn.classList.add('hover:bg-white', 'hover:bg-opacity-20');
+                });
+                this.classList.add('bg-white', 'bg-opacity-20');
+                this.classList.remove('hover:bg-white', 'hover:bg-opacity-20');
+                
+                // Show selected page
+                const targetPage = this.getAttribute('data-page');
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.add('hidden');
+                    page.classList.remove('active');
+                });
+                document.getElementById(`${targetPage}-page`).classList.remove('hidden');
+                document.getElementById(`${targetPage}-page`).classList.add('active');
+            });
+        });
+
+        // Matrix operations
+        class MatrixCalculator {
+            constructor() {
+                this.matrixSize = 3;
+                this.initializeEventListeners();
+                this.updateMatrixInputs();
+            }
+            
+            initializeEventListeners() {
+                // Matrix size controls
+                document.getElementById('update-size-btn').addEventListener('click', () => this.updateMatrixSize());
+                document.getElementById('clear-matrix-btn').addEventListener('click', () => this.clearMatrix());
+                
+                // Calculation buttons
+                document.getElementById('diagonalize-btn').addEventListener('click', () => this.diagonalizeMatrix());
+                document.getElementById('example-btn').addEventListener('click', () => this.loadExample());
+                document.getElementById('random-btn').addEventListener('click', () => this.generateRandomMatrix());
+                
+                // Results actions
+                document.getElementById('copy-results-btn')?.addEventListener('click', () => this.copyResults());
+                document.getElementById('download-results-btn')?.addEventListener('click', () => this.downloadResults());
+                document.getElementById('print-results-btn')?.addEventListener('click', () => this.printResults());
+            }
+            
+            updateMatrixSize() {
+                const sizeSelect = document.getElementById('matrix-size');
+                this.matrixSize = parseInt(sizeSelect.value);
+                this.updateMatrixInputs();
+            }
+            
+            updateMatrixInputs() {
+                const container = document.getElementById('matrix-input-container');
+                container.innerHTML = '';
+                
+                for (let i = 0; i < this.matrixSize; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'flex space-x-2';
+                    
+                    for (let j = 0; j < this.matrixSize; j++) {
+                        const inputWrapper = document.createElement('div');
+                        inputWrapper.className = 'relative';
+                        
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.id = `matrix-${i}-${j}`;
+                        input.className = 'w-16 h-12 text-center bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-primary-500';
+                        input.value = '0';
+                        input.setAttribute('data-row', i);
+                        input.setAttribute('data-col', j);
+                        
+                        const label = document.createElement('span');
+                        label.className = 'absolute -top-6 left-0 text-xs text-gray-500 dark:text-gray-400';
+                        label.textContent = `a${i+1}${j+1}`;
+                        
+                        inputWrapper.appendChild(label);
+                        inputWrapper.appendChild(input);
+                        row.appendChild(inputWrapper);
+                    }
+                    
+                    container.appendChild(row);
+                }
+            }
+            
+            clearMatrix() {
+                for (let i = 0; i < this.matrixSize; i++) {
+                    for (let j = 0; j < this.matrixSize; j++) {
+                        const input = document.getElementById(`matrix-${i}-${j}`);
+                        if (input) input.value = '0';
+                    }
+                }
+                
+                // Hide results if they're visible
+                document.getElementById('results-container').classList.add('hidden');
+            }
+            
+            getInputMatrix() {
+                const matrix = [];
+                
+                for (let i = 0; i < this.matrixSize; i++) {
+                    const row = [];
+                    for (let j = 0; j < this.matrixSize; j++) {
+                        const input = document.getElementById(`matrix-${i}-${j}`);
+                        let value;
+                        
+                        try {
+                            // Parse fractions like '1/2'
+                            if (input.value.includes('/')) {
+                                const parts = input.value.split('/');
+                                value = Number(parts[0]) / Number(parts[1]);
+                            } else {
+                                value = Number(input.value);
+                            }
+                            
+                            if (isNaN(value)) {
+                                throw new Error(`Invalid number at position (${i+1},${j+1})`);
+                            }
+                        } catch (error) {
+                            alert(error.message);
+                            return null;
+                        }
+                        
+                        row.push(value);
+                    }
+                    matrix.push(row);
+                }
+                
+                return matrix;
+            }
+            
+            loadExample() {
+                // Different examples based on matrix size
+                let example;
+                
+                switch (this.matrixSize) {
+                    case 2:
+                        example = [
+                            [2, 1],
+                            [1, 2]
+                        ];
+                        break;
+                    case 3:
+                        example = [
+                            [4, -1, 1],
+                            [0, 1, 0],
+                            [0, 0, 2]
+                        ];
+                        break;
+                    case 4:
+                        example = [
+                            [5, 2, 0, 0],
+                            [2, 5, 0, 0],
+                            [0, 0, 3, 1],
+                            [0, 0, 1, 3]
+                        ];
+                        break;
+                    case 5:
+                        example = [
+                            [2, 0, 0, 0, 0],
+                            [1, 3, 0, 0, 0],
+                            [0, 1, 4, 0, 0],
+                            [0, 0, 1, 5, 0],
+                            [0, 0, 0, 1, 6]
+                        ];
+                        break;
+                    default:
+                        example = [
+                            [1, 0, 0],
+                            [0, 2, 0],
+                            [0, 0, 3]
+                        ];
+                }
+                
+                // Fill the inputs
+                for (let i = 0; i < this.matrixSize; i++) {
+                    for (let j = 0; j < this.matrixSize; j++) {
+                        const input = document.getElementById(`matrix-${i}-${j}`);
+                        if (input) input.value = example[i][j];
+                    }
+                }
+            }
+            
+            generateRandomMatrix() {
+                // Create a matrix that is guaranteed to be diagonalizable
+                // First, create a diagonal matrix with random eigenvalues
+                const eigenvalues = [];
+                for (let i = 0; i < this.matrixSize; i++) {
+                    // Generate integer eigenvalues between -5 and 5
+                    eigenvalues.push(Math.floor(Math.random() * 11) - 5);
+                }
+                
+                // Create a diagonal matrix D
+                const D = math.diag(eigenvalues);
+                
+                // Create a random invertible matrix P
+                let P;
+                do {
+                    // Generate a random matrix with integers between -2 and 2
+                    P = math.matrix(Array.from({ length: this.matrixSize }, () => 
+                        Array.from({ length: this.matrixSize }, () => 
+                            Math.floor(Math.random() * 5) - 2
+                        )
+                    ));
+                    
+                    // Check if P is invertible (has a non-zero determinant)
+                } while (Math.abs(math.det(P)) < 0.01);
+                
+                // Compute A = PDP^(-1)
+                const Pinv = math.inv(P);
+                const A = math.multiply(math.multiply(P, D), Pinv);
+                
+                // Round values to make them cleaner
+                const roundedA = math.map(A, value => Math.round(value * 100) / 100);
+                
+                // Fill the inputs
+                for (let i = 0; i < this.matrixSize; i++) {
+                    for (let j = 0; j < this.matrixSize; j++) {
+                        const input = document.getElementById(`matrix-${i}-${j}`);
+                        if (input) input.value = roundedA.get([i, j]);
+                    }
+                }
+            }
+            
+            formatMatrix(matrix, precision = 4) {
+                try {
+                    // Convert to mathjs matrix if it's an array
+                    const mathjsMatrix = Array.isArray(matrix) ? math.matrix(matrix) : matrix;
+                    const size = mathjsMatrix.size();
+                    
+                    let html = '<table class="mx-auto">';
+                    html += '<tr><td class="align-middle pr-2 text-2xl">[</td>';
+                    
+                    for (let i = 0; i < size[0]; i++) {
+                        html += '<td><table>';
+                        html += '<tr>';
+                        
+                        for (let j = 0; j < size[1]; j++) {
+                            const value = mathjsMatrix.get([i, j]);
+                            let displayValue;
+                            
+                            // Format the value
+                            if (typeof value === 'number') {
+                                // Handle near-zero values
+                                if (Math.abs(value) < 1e-10) {
+                                    displayValue = '0';
+                                } 
+                                // Try to display as fraction for simple values
+                                else if (Math.abs(value) < 1000 && Math.abs(Math.round(value) - value) < 1e-10) {
+                                    displayValue = Math.round(value).toString();
+                                } 
+                                // For other values, format with fixed precision
+                                else {
+                                    displayValue = value.toFixed(precision);
+                                    // Remove trailing zeros
+                                    displayValue = displayValue.replace(/\.?0+$/, '');
+                                }
+                            } 
+                            // Handle complex numbers or other types
+                            else {
+                                displayValue = value.toString();
+                            }
+                            
+                            html += `<td class="px-2 py-1 text-center">${displayValue}</td>`;
+                        }
+                        
+                        html += '</tr>';
+                        html += '</table></td>';
+                    }
+                    
+                    html += '<td class="align-middle pl-2 text-2xl">]</td></tr>';
+                    html += '</table>';
+                    
+                    return html;
+                } catch (error) {
+                    console.error("Error formatting matrix:", error);
+                    return '<span class="text-red-500">Error formatting matrix</span>';
+                }
+            }
+            
+            formatEigenvalues(eigenvalues, algebraic, geometric) {
+                let html = '<div class="space-y-2">';
+                html += '<ul class="list-disc list-inside space-y-1">';
+                
+                const eigenvalueMap = new Map();
+                
+                // Count occurrences of each eigenvalue
+                eigenvalues.forEach(val => {
+                    const key = val.toFixed(4).replace(/\.?0+$/, '');
+                    eigenvalueMap.set(key, (eigenvalueMap.get(key) || 0) + 1);
+                });
+                
+                // Display each unique eigenvalue with its multiplicity
+                for (const [value, count] of eigenvalueMap.entries()) {
+                    const multText = count > 1 ? ` (multiplicity: ${count})` : '';
+                    html += `<li>λ = ${value}${multText}</li>`;
+                }
+                
+                html += '</ul>';
+                
+                // Add information about algebraic and geometric multiplicity
+                if (algebraic && geometric) {
+                    html += '<div class="mt-4">';
+                    html += '<h5 class="font-medium mb-1">Multiplicity Analysis:</h5>';
+                    html += '<table class="w-full border-collapse">';
+                    html += '<thead><tr><th class="text-left py-1">Eigenvalue</th><th class="text-center py-1">Algebraic Mult.</th><th class="text-center py-1">Geometric Mult.</th></tr></thead>';
+                    html += '<tbody>';
+                    
+                    // Display each eigenvalue with its multiplicities
+                    for (const eigenvalue of Object.keys(algebraic)) {
+                        const algMult = algebraic[eigenvalue];
+                        const geoMult = geometric[eigenvalue];
+                        const isDiagonalizable = algMult === geoMult;
+                        
+                        html += `<tr>
+                            <td class="py-1">λ = ${eigenvalue}</td>
+                            <td class="text-center py-1">${algMult}</td>
+                            <td class="text-center py-1 ${isDiagonalizable ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">${geoMult}</td>
+                        </tr>`;
+                    }
+                    
+                    html += '</tbody></table>';
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+                return html;
+            }
+            
+            formatEigenvectors(eigenvectors) {
+                let html = '<div class="space-y-4">';
+                
+                // Group eigenvectors by eigenvalue
+                const eigenMap = new Map();
+                
+                eigenvectors.forEach(ev => {
+                    const key = ev.eigenvalue.toFixed(4).replace(/\.?0+$/, '');
+                    if (!eigenMap.has(key)) {
+                        eigenMap.set(key, []);
+                    }
+                    eigenMap.get(key).push(ev.vector);
+                });
+                
+                // Display eigenvectors grouped by eigenvalue
+                for (const [eigenvalue, vectors] of eigenMap.entries()) {
+                    html += `<div>
+                        <h5 class="font-medium mb-2">Eigenvectors for λ = ${eigenvalue}:</h5>
+                        <div class="flex flex-wrap gap-4">`;
+                    
+                    vectors.forEach((vector, index) => {
+                        html += `<div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-md">
+                            <div>v<sub>${index + 1}</sub> = </div>
+                            ${this.formatMatrix(vector)}
+                        </div>`;
+                    });
+                    
+                    html += '</div></div>';
+                }
+                
+                html += '</div>';
+                return html;
+            }
+            
+            diagonalizeMatrix() {
+                try {
+                    const inputMatrix = this.getInputMatrix();
+                    if (!inputMatrix) return;
+                    
+                    const A = math.matrix(inputMatrix);
+                    
+                    // Calculate eigenvalues and eigenvectors
+                    const eig = math.eigs(A);
+                    
+                    // Extract eigenvalues and vectors
+                    const eigenvalues = eig.values.toArray();
+                    
+                    // Create objects to track algebraic and geometric multiplicity
+                    const algebraicMultiplicity = {};
+                    const geometricMultiplicity = {};
+                    
+                    // Count algebraic multiplicity (duplicates in eigenvalues)
+                    for (const value of eigenvalues) {
+                        const key = value.toFixed(4);
+                        algebraicMultiplicity[key] = (algebraicMultiplicity[key] || 0) + 1;
+                    }
+                    
+                    // Initialize geometric multiplicity
+                    for (const key of Object.keys(algebraicMultiplicity)) {
+                        geometricMultiplicity[key] = 0;
+                    }
+                    
+                    // Format eigenvectors into a structure with eigenvalue info
+                    const vectors = eig.vectors.toArray();
+                    const formattedEigenvectors = [];
+                    
+                    for (let i = 0; i < eigenvalues.length; i++) {
+                        const eigenvalue = eigenvalues[i];
+                        const key = eigenvalue.toFixed(4);
+                        
+                        // Extract column i from the eigenvectors matrix
+                        const vector = vectors.map(row => [row[i]]);
+                        
+                        // Increment geometric multiplicity
+                        geometricMultiplicity[key]++;
+                        
+                        formattedEigenvectors.push({
+                            eigenvalue,
+                            vector: math.matrix(vector)
+                        });
+                    }
+                    
+                    // Check if the matrix is diagonalizable
+                    // A matrix is diagonalizable if and only if its geometric multiplicity
+                    // equals its algebraic multiplicity for every eigenvalue
+                    const isAlgebraicEqualGeometric = Object.keys(algebraicMultiplicity).every(
+                        key => algebraicMultiplicity[key] === geometricMultiplicity[key]
+                    );
+                    
+                    // Check if we have enough eigenvectors (sum of geometric multiplicities equals matrix size)
+                    const totalEigenvectors = Object.values(geometricMultiplicity).reduce((sum, count) => sum + count, 0);
+                    const hasEnoughEigenvectors = totalEigenvectors === this.matrixSize;
+                    
+                    const isDiagonalizable = isAlgebraicEqualGeometric && hasEnoughEigenvectors;
+                    
+                    // Show the results
+                    document.getElementById('results-container').classList.remove('hidden');
+                    
+                    // Display diagonalizability status
+                    const statusElement = document.getElementById('diagonalizable-status');
+                    if (isDiagonalizable) {
+                        statusElement.innerHTML = '✓ This matrix is diagonalizable.';
+                        statusElement.className = 'p-4 rounded-md bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+                    } else {
+                        statusElement.innerHTML = '✗ This matrix is not diagonalizable.';
+                        statusElement.className = 'p-4 rounded-md bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+                        
+                        // Add explanation
+                        if (!hasEnoughEigenvectors) {
+                            statusElement.innerHTML += '<p class="mt-2">The matrix does not have enough linearly independent eigenvectors.</p>';
+                        }
+                        if (!isAlgebraicEqualGeometric) {
+                            statusElement.innerHTML += '<p class="mt-2">There are eigenvalues whose algebraic multiplicity exceeds their geometric multiplicity.</p>';
+                        }
+                    }
+                    
+                    // Display input matrix
+                    document.getElementById('input-matrix').innerHTML = this.formatMatrix(A);
+                    
+                    // Display eigenvalues
+                    document.getElementById('eigenvalues').innerHTML = this.formatEigenvalues(eigenvalues, algebraicMultiplicity, geometricMultiplicity);
+                    
+                    // Display eigenvectors
+                    document.getElementById('eigenvectors').innerHTML = this.formatEigenvectors(formattedEigenvectors);
+                    
+                    // Show or hide diagonalization based on whether the matrix is diagonalizable
+                    const diagonalizationContainer = document.getElementById('diagonalization-container');
+                    
+                    if (isDiagonalizable) {
+                        diagonalizationContainer.classList.remove('hidden');
+                        
+                        // Construct P (eigenvector matrix)
+                        const P = eig.vectors;
+                        
+                        // Construct D (diagonal matrix with eigenvalues)
+                        const D = math.diag(eigenvalues);
+                        
+                        // Compute P^(-1)
+                        const Pinv = math.inv(P);
+                        
+                        // Verify A = PDP^(-1)
+                        const verification = math.multiply(math.multiply(P, D), Pinv);
+                        
+                        // Display the matrices
+                        document.getElementById('p-matrix').innerHTML = this.formatMatrix(P);
+                        document.getElementById('d-matrix').innerHTML = this.formatMatrix(D);
+                        document.getElementById('p-inverse').innerHTML = this.formatMatrix(Pinv);
+                        document.getElementById('verification').innerHTML = this.formatMatrix(verification);
+                    } else {
+                        diagonalizationContainer.classList.add('hidden');
+                    }
+                    
+                    // Scroll to results
+                    document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    console.error("Error diagonalizing matrix:", error);
+                    alert("An error occurred while calculating: " + error.message);
+                }
+            }
+            
+            copyResults() {
+                const resultsContainer = document.getElementById('results-container');
+                
+                // Create a temporary textarea to copy the text
+                const textarea = document.createElement('textarea');
+                textarea.value = resultsContainer.innerText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                // Provide feedback
+                alert("Results copied to clipboard!");
+            }
+            
+            printResults() {
+                window.print();
+            }
+            
+            downloadResults() {
+                try {
+                    // Get current date and time for filename
+                    const now = new Date();
+                    const dateStr = now.toISOString().slice(0, 10);
+                    const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-');
+                    const filename = `matrix-diagonalization-${dateStr}-${timeStr}.txt`;
+                    
+                    // Get results container content
+                    const resultsContainer = document.getElementById('results-container');
+                    
+                    // Start building text content
+                    let textContent = "=== MATRIX DIAGONALIZATION RESULTS ===\n";
+                    textContent += `Generated: ${now.toLocaleString()}\n\n`;
+                    
+                    // Extract diagonalizability status
+                    const statusElement = document.getElementById('diagonalizable-status');
+                    textContent += `STATUS: ${statusElement.textContent.trim()}\n\n`;
+                    
+                    // Get input matrix
+                    textContent += "INPUT MATRIX (A):\n";
+                    // Getting raw text from the input matrix container
+                    const matrixInputs = [];
+                    for (let i = 0; i < this.matrixSize; i++) {
+                        const row = [];
+                        for (let j = 0; j < this.matrixSize; j++) {
+                            const input = document.getElementById(`matrix-${i}-${j}`);
+                            row.push(input ? input.value : '0');
+                        }
+                        matrixInputs.push('[' + row.join(', ') + ']');
+                    }
+                    textContent += matrixInputs.join('\n') + "\n\n";
+                    
+                    // Extract eigenvalues
+                    const eigenvaluesContainer = document.getElementById('eigenvalues');
+                    if (eigenvaluesContainer) {
+                        textContent += "EIGENVALUES:\n";
+                        // Extract text from list items, removing the bullets
+                        const eigenvalueItems = eigenvaluesContainer.querySelectorAll('li');
+                        eigenvalueItems.forEach(item => {
+                            textContent += `${item.textContent.trim()}\n`;
+                        });
+                        textContent += "\n";
+                    }
+                    
+                    // Extract eigenvectors (simplified version)
+                    textContent += "EIGENVECTORS:\n";
+                    textContent += "For detailed eigenvectors, please refer to the web interface.\n\n";
+                    
+                    // Extract diagonalization info
+                    const diagonalizationContainer = document.getElementById('diagonalization-container');
+                    if (!diagonalizationContainer.classList.contains('hidden')) {
+                        textContent += "DIAGONALIZATION:\n";
+                        textContent += "A = PDP^(-1)\n\n";
+                        textContent += "where:\n";
+                        textContent += "- P is the matrix whose columns are the eigenvectors of A\n";
+                        textContent += "- D is the diagonal matrix with eigenvalues on the main diagonal\n";
+                        textContent += "- P^(-1) is the inverse of P\n\n";
+                    }
+                    
+                    // Create a Blob with the text content
+                    const blob = new Blob([textContent], { type: 'text/plain' });
+                    
+                    // Create a download link and trigger it
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    // Clean up
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                } catch (error) {
+                    console.error("Error downloading results:", error);
+                    alert("An error occurred while downloading results: " + error.message);
+                }
+            }
+        }
+        
+        // Initialize the calculator
+        const calculator = new MatrixCalculator();
+    </script>
+</body>
+</html>
